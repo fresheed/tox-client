@@ -1,5 +1,7 @@
 package org.fresheed.university;
 
+import org.fresheed.university.messages.requests.PingRequest;
+import org.fresheed.university.messages.responses.ToxResponse;
 import org.fresheed.university.protocol.ConnectionError;
 import org.fresheed.university.protocol.ToxRelayedConnection;
 import org.fresheed.university.tcp.ToxTCPRelay;
@@ -15,7 +17,9 @@ public class ControlConsole {
 
     // TODO: add exception to getToxProperties()
     // TODO: make all fields private
-    // TODO: refactor TRC and peers interfaces so it will be impossible to get data channel from interim peers
+    // ? remove synchronized ?
+    // refactor exception login in relay data channel retrieve
+    // test backward uint conversion
 
     public static void main(String[] args) {
         Properties props=getToxProperties();
@@ -29,7 +33,15 @@ public class ControlConsole {
         ToxTCPRelay relay=new ToxTCPRelay(server_host, server_port, server_pub_key);
 
         try {
-            ToxRelayedConnection connection=ToxRelayedConnection.connect(client, relay);
+            ToxRelayedConnection conn=ToxRelayedConnection.connect(client, relay);
+
+            conn.send(new PingRequest(0xAA));
+            ToxResponse unused=conn.receive();
+
+            conn.send(new PingRequest(0x55));
+            ToxResponse unused2=conn.receive();
+
+            conn.close();
         } catch (ConnectionError connectionError) {
             System.err.println("Cannot establish connection");
             connectionError.printStackTrace();

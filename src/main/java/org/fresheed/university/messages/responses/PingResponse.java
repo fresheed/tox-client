@@ -22,6 +22,7 @@ public class PingResponse implements ToxResponse {
             throw new IllegalArgumentException("PingResponse must be 9 bytes long");
         }
         ping_id=new Uint64(ArrayUtils.subarray(raw, 1, raw.length)).getValue();
+        System.out.println("ping id "+ping_id);
     }
 
     public long getPingId(){

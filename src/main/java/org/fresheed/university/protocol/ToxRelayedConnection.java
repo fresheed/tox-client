@@ -19,6 +19,7 @@ import org.fresheed.university.transfer.DataChannelError;
 
 import javax.xml.bind.DatatypeConverter;
 import java.math.BigInteger;
+import java.rmi.Remote;
 
 import static org.fresheed.university.encryption.EncryptionUtils.generateNonce;
 
@@ -27,12 +28,11 @@ import static org.fresheed.university.encryption.EncryptionUtils.generateNonce;
  */
 public class ToxRelayedConnection {
 
-    private final LocalPeer local;
-    private final RemotePeer remote;
     private final DataChannel channel;
-    private final byte[] base_incoming_nonce, base_outgoing_nonce;
-    private long cur_incoming_num=0, cur_outgoing_num=0;
+    private final BigInteger base_incoming_nonce, base_outgoing_nonce;
     private final PeerBox box;
+    private long cur_incoming_num=0, cur_outgoing_num=0;
+
 
     public static ToxRelayedConnection connect(LocalPeer client, RemotePeer server) throws ConnectionError{
         DataChannel channel;
@@ -41,7 +41,30 @@ public class ToxRelayedConnection {
         } catch (DataChannelError dataChannelError) {
             throw new ConnectionError("Cannot retrieve content channel for remote peer");
         }
-        LocalPeer interim_client=new LocalPeer() {
+        LocalPeer interim_client=generateLocalProxy();
+        byte[] nonce_for_send=generateNonce();
+        HandshakePayload payload=new HandshakePayload(interim_client, nonce_for_send);
+        HandshakeRequest request=new HandshakeRequest(client, server, payload);
+        try {
+            channel.send(request.getContent());
+            byte[] server_response=channel.receive(96);
+            HandshakeResponse response=new HandshakeResponse(server_response, client, server);
+            PublicKey server_interim_key=response.getPayload().getKey();
+            byte[] nonce_for_receive=response.getPayload().getNonce();
+            RemotePeer interim_server=createProxyAtChannel(server_interim_key, channel);
+
+            ToxRelayedConnection conn=new ToxRelayedConnection(interim_client, interim_server,
+                    nonce_for_send, nonce_for_receive);
+
+            return conn;
+
+        } catch (DataChannelError dataChannelError) {
+            throw new ConnectionError("Cannot perform handshake");
+        }
+    }
+
+    private static LocalPeer generateLocalProxy(){
+        return new LocalPeer(){
             private final KeyPair keys=new KeyPair();
             @Override
             public PublicKey getPublicKey() {
@@ -53,19 +76,13 @@ public class ToxRelayedConnection {
                 return keys.getPrivateKey();
             }
         };
-        byte[] nonce_for_send=generateNonce();
-        HandshakePayload payload=new HandshakePayload(interim_client, nonce_for_send);
-        HandshakeRequest request=new HandshakeRequest(client, server, payload);
-        try {
-            channel.send(request.getContent());
-            byte[] server_response=channel.receive(96);
-            HandshakeResponse response=new HandshakeResponse(server_response, client, server);
-            PublicKey server_interim_key=response.getPayload().getKey();
-            byte[] nonce_for_receive=response.getPayload().getNonce();
-            RemotePeer interim_server=new RemotePeer() {
+    }
+
+    private static RemotePeer createProxyAtChannel(PublicKey pseudonym, DataChannel channel){
+        return new RemotePeer() {
                 @Override
                 public PublicKey getPublicKey() {
-                    return server_interim_key;
+                    return pseudonym;
                 }
 
                 @Override
@@ -73,29 +90,17 @@ public class ToxRelayedConnection {
                     return channel;
                 }
             };
-
-            ToxRelayedConnection conn=new ToxRelayedConnection(interim_client, interim_server,
-                    nonce_for_send, nonce_for_receive);
-            conn.send(new PingRequest(0xAA));
-            ToxResponse unused=conn.receive();
-            return conn;
-
-        } catch (DataChannelError dataChannelError) {
-            throw new ConnectionError("Cannot perform handshake");
-        }
     }
 
     public ToxRelayedConnection(LocalPeer local, RemotePeer remote,
                                 byte[] nonce_outgoing, byte[] nonce_incoming){
-        this.local=local;
-        this.remote=remote;
         try {
             this.channel = remote.getDataChannel();
         } catch (DataChannelError err){
             throw new RuntimeException("Invalid scenario - cannot retrieve prepared data channel");
         }
-        base_incoming_nonce=nonce_incoming;
-        base_outgoing_nonce=nonce_outgoing;
+        base_incoming_nonce=new BigInteger(nonce_incoming);
+        base_outgoing_nonce=new BigInteger(nonce_outgoing);
         box=new PeerBox(local, remote);
     }
 
@@ -117,40 +122,34 @@ public class ToxRelayedConnection {
             int encrypted_size=(int)new Uint16(channel.receive(header_size)).getValue();
             byte[] encrypted_content=channel.receive(encrypted_size);
             ToxResponse decrypted_message=box.decryptMessage(encrypted_content, nextIncomingNonce());
-            System.out.println("Ping id: "+((PingResponse)decrypted_message).getPingId());
             return decrypted_message;
         } catch (DataChannelError dce){
             throw new ConnectionError("Cannot receive message due to internal channel error", dce);
         } catch (DecodingError de) {
             throw new ConnectionError("Cannot parse response", de);
         }
-
     }
 
-    // ? remove synchronized ?
-    // refactor exception login in relay data channel retrieve
-    // test backward uint conversion
+    public void close(){
+        try {
+            channel.close();
+        } catch (DataChannelError dataChannelError) {
+            dataChannelError.printStackTrace();
+        }
+    }
 
-    private synchronized byte[] nextIncomingNonce(){
-        BigInteger nonce_repr=new BigInteger(base_incoming_nonce);
+    private byte[] nextIncomingNonce(){
         BigInteger cur_step=BigInteger.valueOf(cur_incoming_num);
-        BigInteger next_nonce=nonce_repr.add(cur_step);
+        BigInteger next_nonce=base_incoming_nonce.add(cur_step);
         cur_incoming_num++;
         return next_nonce.toByteArray();
     }
 
-    private synchronized byte[] nextOutgoingNonce(){
-        BigInteger nonce_repr=new BigInteger(base_outgoing_nonce);
+    private byte[] nextOutgoingNonce(){
         BigInteger cur_step=BigInteger.valueOf(cur_outgoing_num);
-        BigInteger next_nonce=nonce_repr.add(cur_step);
+        BigInteger next_nonce=base_outgoing_nonce.add(cur_step);
         cur_outgoing_num++;
         return next_nonce.toByteArray();
     }
-
-    public static void printRaw(byte[] raw){
-        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(raw));
-    }
-
-
 }
 
