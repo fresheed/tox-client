@@ -2,6 +2,7 @@ package org.fresheed.university.messages.responses;
 
 import org.abstractj.kalium.crypto.Box;
 import org.apache.commons.lang3.ArrayUtils;
+import org.fresheed.university.drivers.ResponseVisitor;
 import org.fresheed.university.encryption.EncryptionUtils;
 import org.fresheed.university.messages.DecodingError;
 import org.fresheed.university.messages.HandshakePayload;
@@ -11,7 +12,7 @@ import org.fresheed.university.protocol.RemotePeer;
 /**
  * Created by fresheed on 04.04.17.
  */
-public class HandshakeResponse implements ToxResponse{
+public class HandshakeResponse implements ToxIncomingMessage {
     private static final int KEY_LENGTH=32;
     private static final int NONCE_LENGTH=24;
 
@@ -32,5 +33,10 @@ public class HandshakeResponse implements ToxResponse{
 
     public HandshakePayload getPayload(){
         return payload;
+    }
+
+    @Override
+    public void accept(ResponseVisitor visitor) {
+        throw new RuntimeException("This message type should not be processed by visitor");
     }
 }

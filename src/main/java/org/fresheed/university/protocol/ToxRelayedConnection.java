@@ -1,6 +1,5 @@
 package org.fresheed.university.protocol;
 
-import org.abstractj.kalium.crypto.Box;
 import org.abstractj.kalium.keys.KeyPair;
 import org.abstractj.kalium.keys.PrivateKey;
 import org.abstractj.kalium.keys.PublicKey;
@@ -9,17 +8,13 @@ import org.fresheed.university.encryption.PeerBox;
 import org.fresheed.university.messages.*;
 import org.fresheed.university.messages.datatypes.Uint16;
 import org.fresheed.university.messages.requests.HandshakeRequest;
-import org.fresheed.university.messages.requests.PingRequest;
 import org.fresheed.university.messages.requests.ToxRequest;
 import org.fresheed.university.messages.responses.HandshakeResponse;
-import org.fresheed.university.messages.responses.PingResponse;
-import org.fresheed.university.messages.responses.ToxResponse;
+import org.fresheed.university.messages.responses.ToxIncomingMessage;
 import org.fresheed.university.transfer.DataChannel;
 import org.fresheed.university.transfer.DataChannelError;
 
-import javax.xml.bind.DatatypeConverter;
 import java.math.BigInteger;
-import java.rmi.Remote;
 
 import static org.fresheed.university.encryption.EncryptionUtils.generateNonce;
 
@@ -116,12 +111,12 @@ public class ToxRelayedConnection {
         }
     }
 
-    public ToxResponse receive() throws ConnectionError {
+    public ToxIncomingMessage receive() throws ConnectionError {
         try {
             final int header_size=2;
             int encrypted_size=(int)new Uint16(channel.receive(header_size)).getValue();
             byte[] encrypted_content=channel.receive(encrypted_size);
-            ToxResponse decrypted_message=box.decryptMessage(encrypted_content, nextIncomingNonce());
+            ToxIncomingMessage decrypted_message=box.decryptMessage(encrypted_content, nextIncomingNonce());
             return decrypted_message;
         } catch (DataChannelError dce){
             throw new ConnectionError("Cannot receive message due to internal channel error", dce);
@@ -138,14 +133,14 @@ public class ToxRelayedConnection {
         }
     }
 
-    private byte[] nextIncomingNonce(){
+    synchronized private byte[] nextIncomingNonce(){
         BigInteger cur_step=BigInteger.valueOf(cur_incoming_num);
         BigInteger next_nonce=base_incoming_nonce.add(cur_step);
         cur_incoming_num++;
         return next_nonce.toByteArray();
     }
 
-    private byte[] nextOutgoingNonce(){
+    synchronized private byte[] nextOutgoingNonce(){
         BigInteger cur_step=BigInteger.valueOf(cur_outgoing_num);
         BigInteger next_nonce=base_outgoing_nonce.add(cur_step);
         cur_outgoing_num++;

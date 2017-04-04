@@ -1,7 +1,8 @@
 package org.fresheed.university;
 
+import org.fresheed.university.drivers.SimpleDriver;
 import org.fresheed.university.messages.requests.PingRequest;
-import org.fresheed.university.messages.responses.ToxResponse;
+import org.fresheed.university.messages.responses.ToxIncomingMessage;
 import org.fresheed.university.protocol.ConnectionError;
 import org.fresheed.university.protocol.ToxRelayedConnection;
 import org.fresheed.university.tcp.ToxTCPRelay;
@@ -20,6 +21,8 @@ public class ControlConsole {
     // ? remove synchronized ?
     // refactor exception login in relay data channel retrieve
     // test backward uint conversion
+    // grateful shutdown !
+    // check if chosen solution with visitor is canonical
 
     public static void main(String[] args) {
         Properties props=getToxProperties();
@@ -35,11 +38,18 @@ public class ControlConsole {
         try {
             ToxRelayedConnection conn=ToxRelayedConnection.connect(client, relay);
 
-            conn.send(new PingRequest(0xAA));
-            ToxResponse unused=conn.receive();
+//            conn.send(new PingRequest(0xAA));
+//            ToxIncomingMessage unused=conn.receive();
+//
+//            conn.send(new PingRequest(0x55));
+//            ToxIncomingMessage unused2=conn.receive();
 
-            conn.send(new PingRequest(0x55));
-            ToxResponse unused2=conn.receive();
+            SimpleDriver driver=new SimpleDriver(conn);
+            driver.startProcessing();
+
+            //ToxIncomingMessage unused2=conn.receive();
+
+            driver.waitForCompletion();
 
             conn.close();
         } catch (ConnectionError connectionError) {
