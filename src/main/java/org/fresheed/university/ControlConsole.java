@@ -38,23 +38,21 @@ public class ControlConsole {
         try {
             ToxRelayedConnection conn=ToxRelayedConnection.connect(client, relay);
 
-//            conn.send(new PingRequest(0xAA));
-//            ToxIncomingMessage unused=conn.receive();
-//
-//            conn.send(new PingRequest(0x55));
-//            ToxIncomingMessage unused2=conn.receive();
-
             SimpleDriver driver=new SimpleDriver(conn);
             driver.startProcessing();
-
-            //ToxIncomingMessage unused2=conn.receive();
+            // processConsoleInput();
 
             driver.waitForCompletion();
-
             conn.close();
         } catch (ConnectionError connectionError) {
             System.err.println("Cannot establish connection");
             connectionError.printStackTrace();
+        }
+    }
+
+    private static void controlDriverFromConsole(){
+        while (true){
+
         }
     }
 

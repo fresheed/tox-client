@@ -9,7 +9,7 @@ import org.fresheed.university.protocol.ToxRelayedConnection;
 /**
  * Created by fresheed on 04.04.17.
  */
-public class SimpleDriver implements ResponseVisitor {
+public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
     private final ToxRelayedConnection connection;
     private Thread current_receiver=null;
 
@@ -17,6 +17,7 @@ public class SimpleDriver implements ResponseVisitor {
         this.connection=connection;
     }
 
+    @Override
     public void startProcessing() throws ConnectionError {
         activateConnection();
         current_receiver=new Thread(recv_processing);
@@ -71,6 +72,12 @@ public class SimpleDriver implements ResponseVisitor {
         }
     }
 
+    @Override
+    public void visitPingResponse(PingResponse response) {
+        System.out.println("Ping response: "+response.getPingId());
+    }
+
+    @Override
     public void waitForCompletion(){
         try {
             current_receiver.join();
@@ -79,8 +86,4 @@ public class SimpleDriver implements ResponseVisitor {
         }
     }
 
-    @Override
-    public void visitPingResponse(PingResponse response) {
-        System.out.println("Ping response: "+response.getPingId());
-    }
 }
