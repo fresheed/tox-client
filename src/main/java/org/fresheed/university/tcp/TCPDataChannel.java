@@ -55,7 +55,6 @@ public class TCPDataChannel implements DataChannel {
                 throw new DataChannelError("Tried to read from closed socket", e);
             }
         }
-        System.out.println("Successfully read "+requested_size);
         return buffer;
     }
 

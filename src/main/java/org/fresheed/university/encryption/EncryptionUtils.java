@@ -7,7 +7,7 @@ import org.abstractj.kalium.crypto.Random;
  */
 public class EncryptionUtils {
 
-    private static final int NONCE_SIZE=24;
+    public static final int NONCE_SIZE=24;
 
     public static byte[] generateNonce(){
         return new Random().randomBytes(NONCE_SIZE);

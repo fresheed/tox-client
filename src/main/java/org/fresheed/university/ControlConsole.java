@@ -13,6 +13,10 @@ import java.util.Properties;
 public class ControlConsole {
     final static String PROPERTIES_PATH="tox.ini";
 
+    // TODO: add exception to getToxProperties()
+    // TODO: make all fields private
+    // TODO: refactor TRC and peers interfaces so it will be impossible to get data channel from interim peers
+
     public static void main(String[] args) {
         Properties props=getToxProperties();
 
@@ -32,8 +36,6 @@ public class ControlConsole {
         }
     }
 
-    // TODO: add exception to getToxProperties()
-    // TODO: make all fields private
 
     private static Properties getToxProperties() {
         try (InputStream input = new FileInputStream(PROPERTIES_PATH)){
