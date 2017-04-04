@@ -1,5 +1,6 @@
 package org.fresheed.university;
 
+import org.fresheed.university.drivers.ConnectionDriver;
 import org.fresheed.university.drivers.SimpleDriver;
 import org.fresheed.university.messages.requests.PingRequest;
 import org.fresheed.university.messages.responses.ToxIncomingMessage;
@@ -40,19 +41,31 @@ public class ControlConsole {
 
             SimpleDriver driver=new SimpleDriver(conn);
             driver.startProcessing();
-            // processConsoleInput();
+            controlDriverFromConsole(driver);
 
-            driver.waitForCompletion();
             conn.close();
+            driver.waitForCompletion();
+            System.out.println("Client stopped");
         } catch (ConnectionError connectionError) {
             System.err.println("Cannot establish connection");
             connectionError.printStackTrace();
         }
     }
 
-    private static void controlDriverFromConsole(){
+    private static void controlDriverFromConsole(ConnectionDriver driver){
+        BufferedReader console=new BufferedReader(new InputStreamReader(System.in));
         while (true){
-
+            try {
+                System.out.print(">>> ");
+                String input=console.readLine();
+                if ("quit".equals(input)){
+                    System.out.println("Shutting connection down");
+                    break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            }
         }
     }
 

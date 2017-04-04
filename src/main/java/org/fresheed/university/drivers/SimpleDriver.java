@@ -32,19 +32,6 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
         }
     }
 
-//    private Runnable send_processing=new Runnable() {
-//        @Override
-//        public void run() {
-//            while(true){
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//    };
-
     private final Runnable recv_processing=new Runnable() {
         @Override
         public void run() {
