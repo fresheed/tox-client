@@ -8,7 +8,7 @@ import org.fresheed.university.encryption.PeerBox;
 import org.fresheed.university.messages.*;
 import org.fresheed.university.messages.datatypes.Uint16;
 import org.fresheed.university.messages.requests.HandshakeRequest;
-import org.fresheed.university.messages.requests.ToxRequest;
+import org.fresheed.university.messages.requests.ToxOutgoingMessage;
 import org.fresheed.university.messages.responses.HandshakeResponse;
 import org.fresheed.university.messages.responses.ToxIncomingMessage;
 import org.fresheed.university.transfer.DataChannel;
@@ -99,7 +99,7 @@ public class ToxRelayedConnection {
         box=new PeerBox(local, remote);
     }
 
-    public void send(ToxRequest request) throws ConnectionError{
+    public void send(ToxOutgoingMessage request) throws ConnectionError{
         byte[] clean=request.getContent();
         byte[] encrypted=box.encryptMessage(request, nextOutgoingNonce());
         Uint16 len=new Uint16(encrypted.length);

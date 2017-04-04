@@ -4,7 +4,7 @@ import org.abstractj.kalium.NaCl;
 import org.abstractj.kalium.crypto.SecretBox;
 import org.fresheed.university.messages.*;
 import org.fresheed.university.messages.requests.PingRequest;
-import org.fresheed.university.messages.requests.ToxRequest;
+import org.fresheed.university.messages.requests.ToxOutgoingMessage;
 import org.fresheed.university.messages.responses.PingResponse;
 import org.fresheed.university.messages.responses.ToxIncomingMessage;
 import org.fresheed.university.protocol.LocalPeer;
@@ -26,7 +26,7 @@ public class PeerBox {
         box=new SecretBox(shared_key);
     }
 
-    public byte[] encryptMessage(ToxRequest message, byte[] nonce) {
+    public byte[] encryptMessage(ToxOutgoingMessage message, byte[] nonce) {
         byte[] clean_data=message.getContent();
         byte[] encrypted=box.encrypt(nonce, clean_data);
         return encrypted;
@@ -40,8 +40,8 @@ public class PeerBox {
     private ToxIncomingMessage parseMessage(byte[] decrypted) throws  DecodingError{
         int msg_type=decrypted[0];
         switch (msg_type){
-            case PingRequest.MESSAGE_TYPE_ID: return new PingRequest(decrypted);
-            case PingResponse.MESSAGE_TYPE_ID: return new PingResponse(decrypted);
+            case PingRequest.TYPE_PING_REQUEST: return new PingRequest(decrypted);
+            case PingResponse.TYPE_PING_RESPONSE: return new PingResponse(decrypted);
         }
         throw new IllegalArgumentException("Matching message not implemented");
     }

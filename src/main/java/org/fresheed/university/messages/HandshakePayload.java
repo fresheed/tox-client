@@ -3,7 +3,7 @@ package org.fresheed.university.messages;
 import org.abstractj.kalium.keys.PublicKey;
 import org.apache.commons.lang3.ArrayUtils;
 import org.fresheed.university.drivers.ResponseVisitor;
-import org.fresheed.university.messages.requests.ToxRequest;
+import org.fresheed.university.messages.requests.ToxOutgoingMessage;
 import org.fresheed.university.messages.responses.ToxIncomingMessage;
 import org.fresheed.university.protocol.LocalPeer;
 import org.fresheed.university.protocol.RemotePeer;
@@ -11,7 +11,7 @@ import org.fresheed.university.protocol.RemotePeer;
 /**
  * Created by fresheed on 03.04.17.
  */
-public class HandshakePayload implements ToxRequest, ToxIncomingMessage {
+public class HandshakePayload implements ToxOutgoingMessage, ToxIncomingMessage {
     public static final int PAYLOAD_SIZE=56;
     private final byte[] content;
     private final PublicKey key;

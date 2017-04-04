@@ -11,7 +11,7 @@ import static org.fresheed.university.encryption.EncryptionUtils.generateNonce;
 /**
  * Created by fresheed on 03.04.17.
  */
-public class HandshakeRequest implements ToxRequest {
+public class HandshakeRequest implements ToxOutgoingMessage {
     private final byte[] content;
 
     public HandshakeRequest(LocalPeer client, RemotePeer server, HandshakePayload payload) {
