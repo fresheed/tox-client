@@ -11,6 +11,5 @@ import org.fresheed.university.messages.responses.RoutingResponse;
 public interface ResponseVisitor {
     void visitPingRequest(PingRequest request);
     void visitPingResponse(PingResponse response);
-    void visitRoutingRequest(RoutingRequest request);
     void visitRoutingResponse(RoutingResponse response);
 }

@@ -14,24 +14,14 @@ import java.util.List;
 /**
  * Created by fresheed on 04.04.17.
  */
-abstract public class RoutingMessage implements ToxIncomingMessage, ToxOutgoingMessage{
-    private final byte[] content;
+abstract public class RoutingMessage{
+    protected final byte[] content;
     private final PublicKey target_peer;
-
-    public RoutingMessage(byte[] raw) {
-        content=raw;
-        target_peer=new PublicKey(ArrayUtils.subarray(raw, 1, raw.length));
-    }
 
     public RoutingMessage(PublicKey target_peer){
         this.target_peer=target_peer;
         byte[] header=new byte[]{(byte)getMessageType()};
         this.content=ArrayUtils.addAll(header, target_peer.toBytes());
-    }
-
-    @Override
-    public byte[] getContent() {
-        return content;
     }
 
     abstract protected int getMessageType();

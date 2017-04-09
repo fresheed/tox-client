@@ -90,11 +90,6 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
     }
 
     @Override
-    public void visitRoutingRequest(RoutingRequest request) {
-        throw new RuntimeException("This should not happen");
-    }
-
-    @Override
     public void visitRoutingResponse(RoutingResponse response) {
         String target=response.getTargetPeer().toString();
         int connection_id=response.getConnectionId();

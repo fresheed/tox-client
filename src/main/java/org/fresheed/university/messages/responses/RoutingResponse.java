@@ -9,7 +9,7 @@ import org.fresheed.university.messages.RoutingMessage;
 /**
  * Created by fresheed on 04.04.17.
  */
-public class RoutingResponse extends RoutingMessage {
+public class RoutingResponse extends RoutingMessage implements ToxIncomingMessage {
     public static final int TYPE_ROUTING_RESPONSE=0x01;
     private final int connection_id;
 

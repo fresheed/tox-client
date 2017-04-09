@@ -44,7 +44,6 @@ public class PeerBox {
         switch (msg_type){
             case PingRequest.TYPE_PING_REQUEST: return new PingRequest(decrypted);
             case PingResponse.TYPE_PING_RESPONSE: return new PingResponse(decrypted);
-            case RoutingRequest.TYPE_ROUTING_REQUEST: return new RoutingRequest(decrypted);
             case RoutingResponse.TYPE_ROUTING_RESPONSE: return new RoutingResponse(decrypted);
         }
         throw new IllegalArgumentException("Matching message not implemented");

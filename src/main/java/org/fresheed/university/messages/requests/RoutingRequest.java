@@ -7,20 +7,16 @@ import org.fresheed.university.messages.RoutingMessage;
 /**
  * Created by fresheed on 09.04.17.
  */
-public class RoutingRequest extends RoutingMessage{
-    public static final int TYPE_ROUTING_REQUEST =0x00;
+public class RoutingRequest extends RoutingMessage implements ToxOutgoingMessage {
+    public static final int TYPE_ROUTING_REQUEST=0x00;
 
     public RoutingRequest(PublicKey target_peer){
         super(target_peer);
     }
 
-    public RoutingRequest(byte[] raw){
-        super(raw);
-    }
-
     @Override
-    public void accept(ResponseVisitor visitor) {
-        visitor.visitRoutingRequest(this);
+    public byte[] getContent() {
+        return content;
     }
 
     @Override
