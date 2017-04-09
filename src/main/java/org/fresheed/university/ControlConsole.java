@@ -36,7 +36,9 @@ public class ControlConsole {
         String client_priv_key=props.getProperty("CLIENT_PRIV_KEY");
         ToxTCPClient client=new ToxTCPClient(client_priv_key);
 
-        System.out.println("Using public key "+client.getPublicKey().toString());
+        System.out.println("Using public key: "+client.getPublicKey().toString());
+        System.out.println("Tox ID: "+client.getToxId());
+        System.out.println("Temp's public key: F15C97EB766FFFDE6FA675F0112E45E5EFB52BB941AC84340586B42B8C961968");
 
         String server_pub_key=props.getProperty("SERVER_PUB_KEY");
         String server_host=props.getProperty("SERVER_HOST");
@@ -71,6 +73,12 @@ public class ControlConsole {
                 } else if (input.startsWith("connect ")){
                     String pubkey_repr=input.replace("connect ", "");
                     driver.connect(pubkey_repr);
+                } else if (input.startsWith("try ")){
+                    int conn_id=Integer.parseInt(input.replace("try ", ""));
+                    driver.trySendOnline(conn_id);
+                } else if (input.startsWith("oob ")){
+                    String pubkey_repr=input.replace("oob ", "");
+                    driver.oob(pubkey_repr);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

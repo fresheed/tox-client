@@ -6,9 +6,7 @@ import org.fresheed.university.messages.*;
 import org.fresheed.university.messages.requests.PingRequest;
 import org.fresheed.university.messages.requests.RoutingRequest;
 import org.fresheed.university.messages.requests.ToxOutgoingMessage;
-import org.fresheed.university.messages.responses.PingResponse;
-import org.fresheed.university.messages.responses.RoutingResponse;
-import org.fresheed.university.messages.responses.ToxIncomingMessage;
+import org.fresheed.university.messages.responses.*;
 import org.fresheed.university.protocol.LocalPeer;
 import org.fresheed.university.protocol.RemotePeer;
 
@@ -45,6 +43,8 @@ public class PeerBox {
             case PingRequest.TYPE_PING_REQUEST: return new PingRequest(decrypted);
             case PingResponse.TYPE_PING_RESPONSE: return new PingResponse(decrypted);
             case RoutingResponse.TYPE_ROUTING_RESPONSE: return new RoutingResponse(decrypted);
+            case ConnectNotification.TYPE_CONNECT_NOTIFICATION: return new ConnectNotification(decrypted);
+            case OOBRecv.MESSAGE_TYPE_OOBRECV: return new OOBRecv(decrypted);
         }
         throw new IllegalArgumentException("Matching message not implemented");
     }

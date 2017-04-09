@@ -2,6 +2,8 @@ package org.fresheed.university.drivers;
 
 import org.fresheed.university.messages.requests.PingRequest;
 import org.fresheed.university.messages.requests.RoutingRequest;
+import org.fresheed.university.messages.responses.ConnectNotification;
+import org.fresheed.university.messages.responses.OOBRecv;
 import org.fresheed.university.messages.responses.PingResponse;
 import org.fresheed.university.messages.responses.RoutingResponse;
 
@@ -12,4 +14,6 @@ public interface ResponseVisitor {
     void visitPingRequest(PingRequest request);
     void visitPingResponse(PingResponse response);
     void visitRoutingResponse(RoutingResponse response);
+    void visitConnectNotification(ConnectNotification notification);
+    void visitOOBRecv(OOBRecv oobRecv);
 }
