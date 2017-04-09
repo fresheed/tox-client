@@ -1,10 +1,15 @@
 package org.fresheed.university.drivers;
 
+import org.abstractj.kalium.keys.PublicKey;
 import org.fresheed.university.messages.requests.PingRequest;
+import org.fresheed.university.messages.requests.RoutingRequest;
 import org.fresheed.university.messages.responses.PingResponse;
+import org.fresheed.university.messages.responses.RoutingResponse;
 import org.fresheed.university.messages.responses.ToxIncomingMessage;
 import org.fresheed.university.protocol.ConnectionError;
 import org.fresheed.university.protocol.ToxRelayedConnection;
+
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * Created by fresheed on 04.04.17.
@@ -23,6 +28,26 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
         current_receiver=new Thread(recv_processing);
         current_receiver.start();
     }
+
+    @Override
+    public void waitForCompletion(){
+        try {
+            current_receiver.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void connect(String pubkey_repr){
+        PublicKey target=new PublicKey(DatatypeConverter.parseHexBinary(pubkey_repr));
+        RoutingRequest request=new RoutingRequest(target);
+        try {
+            connection.send(request);
+        } catch (ConnectionError connectionError) {
+            System.out.println("Unable to send routing request: "+connectionError);
+        }
+    }
+
 
     public void activateConnection() throws ConnectionError{
         connection.send(new PingRequest(0x55));
@@ -65,12 +90,15 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
     }
 
     @Override
-    public void waitForCompletion(){
-        try {
-            current_receiver.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void visitRoutingRequest(RoutingRequest request) {
+        throw new RuntimeException("This should not happen");
+    }
+
+    @Override
+    public void visitRoutingResponse(RoutingResponse response) {
+        String target=response.getTargetPeer().toString();
+        int connection_id=response.getConnectionId();
+        System.out.println(String.format("Connection id for %s is %d: ", target, connection_id));
     }
 
 }

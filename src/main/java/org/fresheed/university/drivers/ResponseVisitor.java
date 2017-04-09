@@ -1,7 +1,9 @@
 package org.fresheed.university.drivers;
 
 import org.fresheed.university.messages.requests.PingRequest;
+import org.fresheed.university.messages.requests.RoutingRequest;
 import org.fresheed.university.messages.responses.PingResponse;
+import org.fresheed.university.messages.responses.RoutingResponse;
 
 /**
  * Created by fresheed on 04.04.17.
@@ -9,4 +11,6 @@ import org.fresheed.university.messages.responses.PingResponse;
 public interface ResponseVisitor {
     void visitPingRequest(PingRequest request);
     void visitPingResponse(PingResponse response);
+    void visitRoutingRequest(RoutingRequest request);
+    void visitRoutingResponse(RoutingResponse response);
 }

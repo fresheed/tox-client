@@ -2,8 +2,6 @@ package org.fresheed.university;
 
 import org.fresheed.university.drivers.ConnectionDriver;
 import org.fresheed.university.drivers.SimpleDriver;
-import org.fresheed.university.messages.requests.PingRequest;
-import org.fresheed.university.messages.responses.ToxIncomingMessage;
 import org.fresheed.university.protocol.ConnectionError;
 import org.fresheed.university.protocol.ToxRelayedConnection;
 import org.fresheed.university.tcp.ToxTCPRelay;
@@ -15,21 +13,30 @@ import java.util.Properties;
  * Created by fresheed on 18.02.17.
  */
 public class ControlConsole {
-    final static String PROPERTIES_PATH="tox.ini";
+    final static String DEFAULT_PROPERTIES_PATH ="tox.ini";
 
-    // TODO: add exception to getToxProperties()
-    // TODO: make all fields private
-    // ? remove synchronized ?
     // refactor exception login in relay data channel retrieve
     // test backward uint conversion
-    // grateful shutdown !
     // check if chosen solution with visitor is canonical
 
     public static void main(String[] args) {
-        Properties props=getToxProperties();
+        String properties_path= DEFAULT_PROPERTIES_PATH;
+        if (args.length>0){
+            properties_path=args[0];
+        }
+        Properties props= null;
+        try {
+            props = getToxProperties(properties_path);
+        } catch (IOException e) {
+            System.out.println("Cannot read properties");
+            System.exit(1);
+        }
+
 
         String client_priv_key=props.getProperty("CLIENT_PRIV_KEY");
         ToxTCPClient client=new ToxTCPClient(client_priv_key);
+
+        System.out.println("Using public key "+client.getPublicKey().toString());
 
         String server_pub_key=props.getProperty("SERVER_PUB_KEY");
         String server_host=props.getProperty("SERVER_HOST");
@@ -52,7 +59,7 @@ public class ControlConsole {
         }
     }
 
-    private static void controlDriverFromConsole(ConnectionDriver driver){
+    private static void controlDriverFromConsole(SimpleDriver driver){
         BufferedReader console=new BufferedReader(new InputStreamReader(System.in));
         while (true){
             try {
@@ -61,6 +68,9 @@ public class ControlConsole {
                 if ("quit".equals(input)){
                     System.out.println("Shutting connection down");
                     break;
+                } else if (input.startsWith("connect ")){
+                    String pubkey_repr=input.replace("connect ", "");
+                    driver.connect(pubkey_repr);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -70,17 +80,11 @@ public class ControlConsole {
     }
 
 
-    private static Properties getToxProperties() {
-        try (InputStream input = new FileInputStream(PROPERTIES_PATH)){
-            Properties prop = new Properties();
-             prop.load(input);
-             return prop;
-        } catch (FileNotFoundException e){
-            System.err.println("CANNOT PROCESS FURTHER");
-        } catch (IOException e){
-            System.err.println("CANNOT PROCESS FURTHER");
-        }
-        return null;
+    private static Properties getToxProperties(String path) throws IOException {
+        InputStream input = new FileInputStream(path);
+        Properties prop = new Properties();
+        prop.load(input);
+        return prop;
     }
 
 }
