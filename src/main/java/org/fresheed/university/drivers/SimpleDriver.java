@@ -59,7 +59,7 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
         }
     }
 
-    public void oob(String pubkey_repr){
+    public void sendOOBMessage(String pubkey_repr){
         PublicKey target=new PublicKey(DatatypeConverter.parseHexBinary(pubkey_repr));
         OOBSend request=new OOBSend(target, "hello peer".getBytes(Charset.forName("UTF-8")));
         try {

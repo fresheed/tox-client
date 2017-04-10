@@ -1,6 +1,5 @@
 package org.fresheed.university;
 
-import org.fresheed.university.drivers.ConnectionDriver;
 import org.fresheed.university.drivers.SimpleDriver;
 import org.fresheed.university.protocol.ConnectionError;
 import org.fresheed.university.protocol.ToxRelayedConnection;
@@ -78,7 +77,7 @@ public class ControlConsole {
                     driver.trySendOnline(conn_id);
                 } else if (input.startsWith("oob ")){
                     String pubkey_repr=input.replace("oob ", "");
-                    driver.oob(pubkey_repr);
+                    driver.sendOOBMessage(pubkey_repr);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
