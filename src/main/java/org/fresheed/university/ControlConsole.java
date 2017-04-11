@@ -14,10 +14,6 @@ import java.util.Properties;
 public class ControlConsole {
     final static String DEFAULT_PROPERTIES_PATH ="tox.ini";
 
-    // refactor exception login in relay data channel retrieve
-    // test backward uint conversion
-    // check if chosen solution with visitor is canonical
-
     public static void main(String[] args) {
         String properties_path= DEFAULT_PROPERTIES_PATH;
         if (args.length>0){
@@ -66,18 +62,16 @@ public class ControlConsole {
             try {
                 System.out.print(">>> ");
                 String input=console.readLine();
-                if ("quit".equals(input)){
+                String[] tokens=input.split(" ");
+                if ("quit".equals(tokens[0])){
                     System.out.println("Shutting connection down");
                     break;
-                } else if (input.startsWith("connect ")){
-                    String pubkey_repr=input.replace("connect ", "");
-                    driver.connect(pubkey_repr);
-                } else if (input.startsWith("try ")){
-                    int conn_id=Integer.parseInt(input.replace("try ", ""));
-                    driver.trySendOnline(conn_id);
-                } else if (input.startsWith("oob ")){
-                    String pubkey_repr=input.replace("oob ", "");
-                    driver.sendOOBMessage(pubkey_repr);
+                } else if ("connect".equals(tokens[0])){
+                    driver.connect(tokens[1]);
+                } else if ("oob".equals(tokens[0])){
+                    int conn_id=Integer.parseInt(tokens[1]);
+                    String message=tokens[2];
+                    driver.sendOOBMessage(conn_id, message);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

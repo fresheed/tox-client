@@ -44,6 +44,7 @@ public class PeerBox {
             case PingResponse.TYPE_PING_RESPONSE: return new PingResponse(decrypted);
             case RoutingResponse.TYPE_ROUTING_RESPONSE: return new RoutingResponse(decrypted);
             case ConnectNotification.TYPE_CONNECT_NOTIFICATION: return new ConnectNotification(decrypted);
+            case DisconnectNotification.TYPE_DISCONNECT_NOTIFICATION: return new DisconnectNotification(decrypted);
             case OOBRecv.MESSAGE_TYPE_OOBRECV: return new OOBRecv(decrypted);
         }
         throw new IllegalArgumentException("Matching message not implemented");

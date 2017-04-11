@@ -1,4 +1,4 @@
-package org.fresheed.university.messages.responses;
+package org.fresheed.university.messages;
 
 import org.fresheed.university.drivers.ConnectionDriver;
 

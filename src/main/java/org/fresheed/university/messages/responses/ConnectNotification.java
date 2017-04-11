@@ -1,6 +1,7 @@
 package org.fresheed.university.messages.responses;
 
 import org.fresheed.university.drivers.ResponseVisitor;
+import org.fresheed.university.messages.ConnectionStatusMessage;
 
 /**
  * Created by fresheed on 09.04.17.

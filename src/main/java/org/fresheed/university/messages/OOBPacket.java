@@ -26,4 +26,8 @@ abstract public class OOBPacket {
         return data;
     }
 
+    public PublicKey getAnotherPeer(){
+        return another_peer;
+    }
+
 }

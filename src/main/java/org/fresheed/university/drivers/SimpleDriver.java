@@ -2,7 +2,6 @@ package org.fresheed.university.drivers;
 
 import org.abstractj.kalium.keys.PublicKey;
 import org.fresheed.university.messages.requests.OOBSend;
-import org.fresheed.university.messages.requests.OnlineDataPacket;
 import org.fresheed.university.messages.requests.PingRequest;
 import org.fresheed.university.messages.requests.RoutingRequest;
 import org.fresheed.university.messages.responses.*;
@@ -12,6 +11,8 @@ import org.fresheed.university.protocol.ToxRelayedConnection;
 import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by fresheed on 04.04.17.
@@ -19,6 +20,23 @@ import java.nio.charset.StandardCharsets;
 public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
     private final ToxRelayedConnection connection;
     private Thread current_receiver=null;
+    private final Runnable recv_processing=new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    System.out.println("Waiting for message...");
+                    ToxIncomingMessage response = connection.receive();
+                    response.accept(SimpleDriver.this);
+                } catch (ConnectionError connectionError) {
+                    System.out.println("Connection closed - stopping processing");
+                    break;
+                }
+            }
+        }
+    };
+
+    private Map<Integer, PublicKey> connections=new HashMap<>();
 
     public SimpleDriver(ToxRelayedConnection connection){
         this.connection=connection;
@@ -50,18 +68,8 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
         }
     }
 
-    public void trySendOnline(int connection_id){
-        OnlineDataPacket packet=new OnlineDataPacket(connection_id);
-        try {
-            connection.send(packet);
-        } catch (ConnectionError connectionError) {
-            System.out.println("Unable to send online packet: "+connectionError);
-        }
-    }
-
-    public void sendOOBMessage(String pubkey_repr){
-        PublicKey target=new PublicKey(DatatypeConverter.parseHexBinary(pubkey_repr));
-        OOBSend request=new OOBSend(target, "hello peer".getBytes(Charset.forName("UTF-8")));
+    public void sendOOBMessage(int conn_id, String message){
+        OOBSend request=new OOBSend(connections.get(conn_id), message.getBytes(Charset.forName("UTF-8")));
         try {
             connection.send(request);
         } catch (ConnectionError connectionError) {
@@ -78,21 +86,6 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
         }
     }
 
-    private final Runnable recv_processing=new Runnable() {
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    System.out.println("Waiting for message...");
-                    ToxIncomingMessage response = connection.receive();
-                    response.accept(SimpleDriver.this);
-                } catch (ConnectionError connectionError) {
-                    System.out.println("Connection closed - stopping processing");
-                    break;
-                }
-            }
-        }
-    };
 
     @Override
     public void visitPingRequest(PingRequest request) {
@@ -114,6 +107,7 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
     public void visitRoutingResponse(RoutingResponse response) {
         String target=response.getTargetPeer().toString();
         int connection_id=response.getConnectionId();
+        connections.put(connection_id, response.getTargetPeer());
         System.out.println(String.format("Connection id for %s is %d: ", target, connection_id));
     }
 
@@ -124,6 +118,13 @@ public class SimpleDriver implements ResponseVisitor, ConnectionDriver {
 
     @Override
     public void visitOOBRecv(OOBRecv oobRecv) {
-        System.out.println("received: "+new String(oobRecv.getData(), StandardCharsets.UTF_8));
+        System.out.println(String.format("Message from %s: %s",
+                oobRecv.getAnotherPeer(), new String(oobRecv.getData(), StandardCharsets.UTF_8)));
+    }
+
+    @Override
+    public void visitDisconnectNotification(DisconnectNotification notification) {
+        connections.remove(notification.getConnectionId());
+        System.out.println("Connection "+notification.getConnectionId()+" has been closed");
     }
 }
